@@ -1,0 +1,21 @@
+# Dependencies untuk sistem parafrase dasar
+# Semua fungsi menggunakan library standar Python untuk metode hybrid
+
+# Dependencies untuk IndoT5 integration
+torch>=1.9.0                  # PyTorch untuk model IndoT5
+transformers>=4.10.0          # HuggingFace transformers untuk T5
+sentencepiece>=0.1.96         # Tokenizer untuk T5
+accelerate>=0.12.0            # Untuk optimasi loading model
+safetensors>=0.3.0            # Untuk loading model weights yang aman
+
+# Dependencies opsional untuk fitur tambahan
+numpy>=1.21.0                 # Untuk operasi array yang lebih efisien
+scikit-learn>=1.0.0          # Untuk similarity metrics yang lebih advanced
+nltk>=3.7                    # Untuk NLP processing yang lebih lengkap
+spacy>=3.4.0                 # Untuk named entity recognition
+pandas>=1.3.0                # Untuk data manipulation
+streamlit>=1.10.0            # Untuk web interface (opsional)
+
+# Dependencies untuk development dan testing
+pytest>=6.0.0               # Untuk testing framework
+tqdm>=4.60.0                # Untuk progress bars

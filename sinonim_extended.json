@@ -1,0 +1,125 @@
+{
+    "pendidikan": {
+        "sinonim": ["edukasi", "pembelajaran", "pengajaran", "didikan", "bimbingan"]
+    },
+    "pembelajaran": {
+        "sinonim": ["pendidikan", "edukasi", "pengajaran", "pelatihan", "studi"]
+    },
+    "penting": {
+        "sinonim": ["vital", "esensial", "krusial", "signifikan", "berarti"]
+    },
+    "mengembangkan": {
+        "sinonim": ["membangun", "meningkatkan", "memperluas", "memajukan", "menumbuhkan"]
+    },
+    "potensi": {
+        "sinonim": ["kemampuan", "kapasitas", "daya", "bakat", "kekuatan"]
+    },
+    "manusia": {
+        "sinonim": ["orang", "individu", "pribadi", "insan", "makhluk"]
+    },
+    "teknologi": {
+        "sinonim": ["teknik", "teknologi", "sistem", "metode", "cara"]
+    },
+    "informasi": {
+        "sinonim": ["data", "keterangan", "berita", "fakta", "pengetahuan"]
+    },
+    "membantu": {
+        "sinonim": ["mendukung", "menunjang", "menolong", "memfasilitasi", "mempermudah"]
+    },
+    "mempercepat": {
+        "sinonim": ["mempercepat", "mengakselerasi", "menggiatkan", "memperlancar", "meningkatkan"]
+    },
+    "proses": {
+        "sinonim": ["tahapan", "prosedur", "cara", "metode", "langkah"]
+    },
+    "komunikasi": {
+        "sinonim": ["interaksi", "hubungan", "kontak", "dialog", "percakapan"]
+    },
+    "era": {
+        "sinonim": ["zaman", "masa", "periode", "waktu", "jaman"]
+    },
+    "modern": {
+        "sinonim": ["kontemporer", "kini", "terkini", "masa kini", "dewasa ini"]
+    },
+    "pemerintah": {
+        "sinonim": ["negara", "otoritas", "penguasa", "rezim", "administrasi"]
+    },
+    "memberikan": {
+        "sinonim": ["menyediakan", "menyerahkan", "menawarkan", "menghadiahkan", "menyumbangkan"]
+    },
+    "perhatian": {
+        "sinonim": ["fokus", "konsentrasi", "kepedulian", "minat", "concern"]
+    },
+    "khusus": {
+        "sinonim": ["spesial", "istimewa", "tertentu", "eksklusif", "tersendiri"]
+    },
+    "masalah": {
+        "sinonim": ["problem", "isu", "persoalan", "kesulitan", "tantangan"]
+    },
+    "kemiskinan": {
+        "sinonim": ["kefakiran", "ketidakmampuan", "kekurangan", "kesengsaraan", "keterbatasan"]
+    },
+    "mahasiswa": {
+        "sinonim": ["pelajar", "siswa", "peserta didik", "sarjana muda", "akademisi"]
+    },
+    "belajar": {
+        "sinonim": ["menimba ilmu", "mempelajari", "mengkaji", "mendalami", "menelaah"]
+    },
+    "tekun": {
+        "sinonim": ["rajin", "gigih", "ulet", "konsisten", "sungguh-sungguh"]
+    },
+    "mencapai": {
+        "sinonim": ["meraih", "memperoleh", "mendapatkan", "menggapai", "mewujudkan"]
+    },
+    "prestasi": {
+        "sinonim": ["pencapaian", "keberhasilan", "hasil", "capaian", "kesuksesan"]
+    },
+    "baik": {
+        "sinonim": ["bagus", "unggul", "hebat", "prima", "optimal"]
+    },
+    "perusahaan": {
+        "sinonim": ["korporasi", "firma", "badan usaha", "organisasi", "institusi"]
+    },
+    "menggunakan": {
+        "sinonim": ["memakai", "memanfaatkan", "menerapkan", "mengaplikasikan", "mempergunakan"]
+    },
+    "strategi": {
+        "sinonim": ["taktik", "pendekatan", "cara", "metode", "rencana"]
+    },
+    "pemasaran": {
+        "sinonim": ["marketing", "promosi", "penjualan", "distribusi", "perdagangan"]
+    },
+    "inovatif": {
+        "sinonim": ["kreatif", "baru", "segar", "revolusioner", "progresif"]
+    },
+    "menarik": {
+        "sinonim": ["memikat", "mengundang", "menawan", "mempesona", "menggiurkan"]
+    },
+    "pelanggan": {
+        "sinonim": ["konsumen", "pembeli", "klien", "nasabah", "customer"]
+    },
+    "adalah": {
+        "sinonim": ["merupakan", "ialah", "yakni", "yaitu"]
+    },
+    "sangat": {
+        "sinonim": ["amat", "betul-betul", "benar-benar", "sungguh"]
+    },
+    "untuk": {
+        "sinonim": ["bagi", "guna", "demi", "supaya"]
+    },
+    "di": {
+        "sinonim": ["pada", "dalam"]
+    },
+    "dengan": {
+        "sinonim": ["melalui", "lewat", "via"]
+    },
+    "terhadap": {
+        "sinonim": ["kepada", "pada", "atas"]
+    },
+    "harus": {
+        "sinonim": ["wajib", "mesti", "perlu", "semestinya"]
+    },
+    "dapat": {
+        "sinonim": ["bisa", "mampu", "sanggup"]
+    }
+}
