@@ -3,65 +3,668 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Parafrase Bahasa Indonesia</title>
+    <title>Sistem Parafrase Bahasa Indonesia - Enhanced</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 30px;
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-section h1 {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-secondary {
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: white;
+        }
+        .quality-high { background-color: #28a745; }
+        .quality-medium { background-color: #ffc107; }
+        .quality-low { background-color: #dc3545; }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .stats-row {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-item {
+            text-align: center;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .method-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        footer {
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .advanced-params {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .toggle-advanced {
+            cursor: pointer;
+            color: #667eea;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .toggle-advanced:hover {
+            color: #764ba2;
+        }
+    </style>
 </head>
 <body>
     <div class="container py-4">
-        <h1 class="mb-3">🔄 Sistem Parafrase Bahasa Indonesia</h1>
-        <p class="lead">Hybrid + IndoT5 + Integrated (Flask Web UI)</p>
-        <div class="card mb-4">
-            <div class="card-body">
-                <form id="paraphrase-form">
-                    <div class="mb-3">
-                        <label for="inputText" class="form-label">Teks yang ingin diparafrase:</label>
-                        <textarea class="form-control" id="inputText" rows="3" required placeholder="Masukkan kalimat atau paragraf dalam bahasa Indonesia..."></textarea>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="method" class="form-label">Metode:</label>
-                            <select class="form-select" id="method">
-                                <option value="hybrid">Hybrid</option>
-                                <option value="t5">IndoT5</option>
-                                <option value="integrated">Integrated</option>
-                                <option value="best">Best</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="numVariations" class="form-label">Jumlah Variasi:</label>
-                            <input type="number" class="form-control" id="numVariations" min="1" max="5" value="3">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="synonymRate" class="form-label">Rate Sinonim:</label>
-                            <input type="number" class="form-control" id="synonymRate" min="0" max="1" step="0.1" value="0.3">
+        <div class="main-container">
+            <div class="header-section">
+                <h1><i class="fas fa-sync-alt"></i> Sistem Parafrase Bahasa Indonesia</h1>
+                <p class="lead">Enhanced Hybrid + IndoT5 + Smart Synonym Integration</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <span class="stats-number" id="statusIndicator">🔄</span>
+                            <span class="stats-label">Status</span>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="temperature" class="form-label">Temperature (T5):</label>
-                            <input type="number" class="form-control" id="temperature" min="0.1" max="2.0" step="0.1" value="0.8">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="topP" class="form-label">Top-p (T5):</label>
-                            <input type="number" class="form-control" id="topP" min="0.1" max="1.0" step="0.05" value="0.95">
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <span class="stats-number" id="synonymCount">-</span>
+                            <span class="stats-label">Sinonim</span>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">🔄 Parafrase</button>
-                    <button type="button" class="btn btn-secondary ms-2" id="loadExample">Contoh</button>
-                </form>
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <span class="stats-number" id="methodCount">-</span>
+                            <span class="stats-label">Metode</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="paraphrase-form">
+                        <div class="mb-3">
+                            <label for="inputText" class="form-label">
+                                <i class="fas fa-edit"></i> Teks yang ingin diparafrase:
+                            </label>
+                            <textarea class="form-control" id="inputText" rows="4" required 
+                                placeholder="Masukkan kalimat atau paragraf dalam bahasa Indonesia..."></textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="method" class="form-label">
+                                    <i class="fas fa-cogs"></i> Metode:
+                                </label>
+                                <select class="form-select" id="method">
+                                    <option value="hybrid">Hybrid (Cepat)</option>
+                                    <option value="t5">IndoT5 (Akurat)</option>
+                                    <option value="integrated" selected>Integrated (Seimbang)</option>
+                                    <option value="best">Best (Terbaik)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="numVariations" class="form-label">
+                                    <i class="fas fa-list-ol"></i> Jumlah Variasi:
+                                </label>
+                                <input type="number" class="form-control" id="numVariations" min="1" max="5" value="3">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="synonymRate" class="form-label">
+                                    <i class="fas fa-percentage"></i> Rate Sinonim:
+                                </label>
+                                <input type="number" class="form-control" id="synonymRate" min="0" max="1" step="0.1" value="0.4">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="qualityThreshold" class="form-label">
+                                    <i class="fas fa-star"></i> Threshold Kualitas:
+                                </label>
+                                <input type="number" class="form-control" id="qualityThreshold" min="0" max="1" step="0.1" value="0.3">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="toggle-advanced" onclick="toggleAdvanced()">
+                                <i class="fas fa-chevron-down" id="advancedIcon"></i> Parameter Lanjutan
+                            </span>
+                        </div>
+
+                        <div class="advanced-params" id="advancedParams" style="display: none;">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="temperature" class="form-label">
+                                        <i class="fas fa-thermometer-half"></i> Temperature (T5):
+                                    </label>
+                                    <input type="number" class="form-control" id="temperature" min="0.1" max="2.0" step="0.1" value="0.8">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="topP" class="form-label">
+                                        <i class="fas fa-layer-group"></i> Top-p (T5):
+                                    </label>
+                                    <input type="number" class="form-control" id="topP" min="0.1" max="1.0" step="0.05" value="0.95">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="repetitionPenalty" class="form-label">
+                                        <i class="fas fa-ban"></i> Repetition Penalty:
+                                    </label>
+                                    <input type="number" class="form-control" id="repetitionPenalty" min="1.0" max="2.0" step="0.1" value="1.3">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="smartReplacement" checked>
+                                        <label class="form-check-label" for="smartReplacement">
+                                            <i class="fas fa-brain"></i> Smart Replacement
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="preserveKeywords" checked>
+                                        <label class="form-check-label" for="preserveKeywords">
+                                            <i class="fas fa-shield-alt"></i> Preserve Keywords
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-sync-alt"></i> Parafrase
+                            </button>
+                            <button type="button" class="btn btn-secondary me-2" id="loadExample">
+                                <i class="fas fa-lightbulb"></i> Contoh
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="clearText">
+                                <i class="fas fa-eraser"></i> Bersihkan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="result-section" style="display:none;">
+                <div class="stats-row">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="processingTime">-</span>
+                                <span class="stats-label">Waktu Proses (detik)</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="totalGenerated">-</span>
+                                <span class="stats-label">Total Dihasilkan</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="highQualityCount">-</span>
+                                <span class="stats-label">Kualitas Tinggi</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-item">
+                                <span class="stats-number" id="methodUsed">-</span>
+                                <span class="stats-label">Metode</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3><i class="fas fa-chart-line"></i> Hasil Parafrase</h3>
+                <div id="results"></div>
+            </div>
+
+            <footer>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">
+                            <i class="fas fa-code"></i> Made with Flask, Bootstrap & Love
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p class="mb-0">
+                            <i class="fas fa-brain"></i> Enhanced Indonesian Paraphraser
+                        </p>
+                    </div>
+                </div>
+            </footer>
         </div>
-        <div id="result-section" style="display:none;">
-            <h3>📊 Hasil Parafrase</h3>
-            <div id="results"></div>
-        </div>
-        <footer class="mt-5 text-center text-muted">
-            <hr>
-            <small>Made with Flask & Bootstrap | <a href="https://github.com/username/parafrase">GitHub</a></small>
-        </footer>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/app.js"></script>
+    <script>
+        // Global variables
+        let isProcessing = false;
+        
+        // DOM elements
+        const form = document.getElementById('paraphrase-form');
+        const resultSection = document.getElementById('result-section');
+        const resultsDiv = document.getElementById('results');
+        const loadExampleBtn = document.getElementById('loadExample');
+        const clearTextBtn = document.getElementById('clearText');
+        const inputText = document.getElementById('inputText');
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSystemStatus();
+            
+            // Form submission
+            form.addEventListener('submit', handleFormSubmit);
+            
+            // Button events
+            loadExampleBtn.addEventListener('click', loadExample);
+            clearTextBtn.addEventListener('click', clearText);
+            
+            // Auto-resize textarea
+            inputText.addEventListener('input', autoResizeTextarea);
+        });
+
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('statusIndicator').textContent = data.paraphraser_loaded ? '✅' : '❌';
+                document.getElementById('synonymCount').textContent = data.synonym_count || '0';
+                document.getElementById('methodCount').textContent = Object.keys(data.methods_available || {}).length;
+                
+            } catch (error) {
+                console.error('Error loading system status:', error);
+                document.getElementById('statusIndicator').textContent = '❌';
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (isProcessing) return;
+            
+            const textValue = inputText.value.trim();
+            if (!textValue) {
+                showAlert('Mohon masukkan teks yang ingin diparafrase.', 'warning');
+                return;
+            }
+            
+            isProcessing = true;
+            showProcessingState();
+            
+            const payload = {
+                text: textValue,
+                method: document.getElementById('method').value,
+                num_variations: parseInt(document.getElementById('numVariations').value),
+                synonym_rate: parseFloat(document.getElementById('synonymRate').value),
+                temperature: parseFloat(document.getElementById('temperature').value),
+                top_p: parseFloat(document.getElementById('topP').value),
+                repetition_penalty: parseFloat(document.getElementById('repetitionPenalty').value),
+                smart_replacement: document.getElementById('smartReplacement').checked,
+                preserve_keywords: document.getElementById('preserveKeywords').checked,
+                quality_threshold: parseFloat(document.getElementById('qualityThreshold').value)
+            };
+            
+            try {
+                const response = await fetch('/api/paraphrase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResults(data);
+                } else {
+                    showAlert(data.error || 'Terjadi kesalahan saat memproses.', 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Gagal terhubung ke server. Silakan coba lagi.', 'danger');
+            } finally {
+                isProcessing = false;
+                hideProcessingState();
+            }
+        }
+
+        function showProcessingState() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
+            submitBtn.disabled = true;
+            
+            resultsDiv.innerHTML = `
+                <div class="text-center my-4">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+                    <p class="mt-3">Sedang memproses parafrase...</p>
+                </div>
+            `;
+            resultSection.style.display = 'block';
+        }
+
+        function hideProcessingState() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Parafrase';
+            submitBtn.disabled = false;
+        }
+
+        function showResults(data) {
+            // Update statistics
+            document.getElementById('processingTime').textContent = data.processing_time.toFixed(2);
+            document.getElementById('totalGenerated').textContent = data.total_generated;
+            document.getElementById('highQualityCount').textContent = data.high_quality_count;
+            document.getElementById('methodUsed').textContent = data.method_used;
+            
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Tidak ada parafrase berkualitas tinggi yang dihasilkan. 
+                        Coba turunkan threshold kualitas atau ubah parameter lainnya.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            data.results.forEach((result, index) => {
+                const qualityClass = getQualityClass(result.quality_score);
+                const qualityText = getQualityText(result.quality_score);
+                
+                html += `
+                    <div class="card result-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-quote-left"></i> Parafrase ${index + 1}
+                                </h5>
+                                <div>
+                                    <span class="quality-badge ${qualityClass}">${qualityText}</span>
+                                    <span class="method-info ms-2">${result.method || 'Unknown'}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text fs-5 mb-3">${result.text}</p>
+                            
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-percentage"></i> Similarity: 
+                                        <strong>${(result.similarity_score * 100).toFixed(1)}%</strong>
+                                    </small>
+                                    <div class="progress-custom">
+                                        <div class="progress-bar-custom" style="width: ${result.similarity_score * 100}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-star"></i> Quality: 
+                                        <strong>${(result.quality_score * 100).toFixed(1)}%</strong>
+                                    </small>
+                                    <div class="progress-custom">
+                                        <div class="progress-bar-custom" style="width: ${result.quality_score * 100}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-thumbs-up"></i> Confidence: 
+                                        <strong>${(result.confidence * 100).toFixed(1)}%</strong>
+                                    </small>
+                                    <div class="progress-custom">
+                                        <div class="progress-bar-custom" style="width: ${result.confidence * 100}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-exchange-alt"></i> Transformasi: 
+                                        <strong>${result.transformations ? result.transformations.length : 0}</strong>
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            ${result.transformations && result.transformations.length > 0 ? `
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tools"></i> Transformasi yang diterapkan:
+                                    </small>
+                                    <div class="mt-1">
+                                        ${result.transformations.map(t => `<span class="badge bg-secondary me-1">${t}</span>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${result.replacement_details && result.replacement_details.length > 0 ? `
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-sync-alt"></i> Penggantian sinonim: 
+                                        <strong>${result.replacement_details.length}</strong>
+                                    </small>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('${result.text.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-copy"></i> Salin
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm ms-2" onclick="useAsInput('${result.text.replace(/'/g, "\\'")}')">
+                                    <i class="fas fa-redo"></i> Parafrase Ulang
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+            resultSection.style.display = 'block';
+            
+            // Scroll to results
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function getQualityClass(score) {
+            if (score >= 0.7) return 'quality-high';
+            if (score >= 0.5) return 'quality-medium';
+            return 'quality-low';
+        }
+
+        function getQualityText(score) {
+            if (score >= 0.7) return 'Tinggi';
+            if (score >= 0.5) return 'Sedang';
+            return 'Rendah';
+        }
+
+        async function loadExample() {
+            try {
+                const response = await fetch('/api/examples');
+                const data = await response.json();
+                
+                if (data.examples && data.examples.length > 0) {
+                    const randomExample = data.examples[Math.floor(Math.random() * data.examples.length)];
+                    inputText.value = randomExample;
+                    autoResizeTextarea();
+                }
+            } catch (error) {
+                console.error('Error loading example:', error);
+                showAlert('Gagal memuat contoh teks.', 'warning');
+            }
+        }
+
+        function clearText() {
+            inputText.value = '';
+            autoResizeTextarea();
+            resultSection.style.display = 'none';
+        }
+
+        function autoResizeTextarea() {
+            inputText.style.height = 'auto';
+            inputText.style.height = inputText.scrollHeight + 'px';
+        }
+
+        function toggleAdvanced() {
+            const advancedParams = document.getElementById('advancedParams');
+            const advancedIcon = document.getElementById('advancedIcon');
+            
+            if (advancedParams.style.display === 'none') {
+                advancedParams.style.display = 'block';
+                advancedIcon.classList.remove('fa-chevron-down');
+                advancedIcon.classList.add('fa-chevron-up');
+            } else {
+                advancedParams.style.display = 'none';
+                advancedIcon.classList.remove('fa-chevron-up');
+                advancedIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('Teks berhasil disalin ke clipboard!', 'success');
+            }).catch(err => {
+                console.error('Error copying text:', err);
+                showAlert('Gagal menyalin teks.', 'danger');
+            });
+        }
+
+        function useAsInput(text) {
+            inputText.value = text;
+            autoResizeTextarea();
+            inputText.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.main-container').insertBefore(alertDiv, document.querySelector('.main-container').firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    </script>
 </body>
-</html> 
+</html>

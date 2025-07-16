@@ -1,212 +1,224 @@
 #!/usr/bin/env python3
 """
-Flask Web Interface untuk Sistem Parafrase Bahasa Indonesia
-Pengganti Streamlit yang lebih lightweight dan kompatibel
-Jalankan dengan: python app.py
+Flask Web App for Indonesian Paraphraser
+Enhanced with better accuracy and IndoT5 + Synonym integration
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
-from flask_cors import CORS
+from flask import Flask, render_template, request, jsonify
 import json
-import os
 import time
-import traceback
-from typing import Dict, List, Optional
+import os
+import logging
+from paraphraser import IntegratedParaphraser
 
-# Import paraphraser modules
-try:
-    from paraphraser import HybridParaphraser, IndoT5Paraphraser, IntegratedParaphraser
-    PARAPHRASER_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: Paraphraser import failed: {e}")
-    PARAPHRASER_AVAILABLE = False
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
 
 # Global paraphraser instance
 paraphraser = None
-paraphraser_type = None
-system_info = {}
 
 def initialize_paraphraser():
-    """Initialize the paraphraser system"""
-    global paraphraser, paraphraser_type, system_info
-    
-    if not PARAPHRASER_AVAILABLE:
-        return False
-    
+    """Initialize paraphraser with optimized settings"""
+    global paraphraser
     try:
-        # Try integrated paraphraser first
-        paraphraser = IntegratedParaphraser()
-        paraphraser_type = "integrated"
-        system_info = {
-            "methods_available": paraphraser.methods_available,
-            "status": "integrated_loaded"
-        }
-        return True
+        paraphraser = IntegratedParaphraser(
+            synonym_dict_path='sinonim.json',
+            t5_model_name="LazarusNLP/IndoNanoT5-base",
+            enable_hybrid=True,
+            enable_t5=True
+        )
+        logger.info("Paraphraser initialized successfully")
     except Exception as e:
-        print(f"Failed to initialize integrated paraphraser: {e}")
-        
-        # Fallback to hybrid only
-        synonym_files = ['sinonim_extended.json', 'sinonim.json']
-        for file in synonym_files:
-            if os.path.exists(file):
-                try:
-                    paraphraser = HybridParaphraser(file)
-                    paraphraser_type = "hybrid_only"
-                    system_info = {
-                        "methods_available": {"hybrid": True, "t5": False},
-                        "status": "hybrid_only",
-                        "synonym_file": file
-                    }
-                    return True
-                except Exception as e2:
-                    print(f"Failed to initialize hybrid paraphraser: {e2}")
-        
-        return False
+        logger.error(f"Failed to initialize paraphraser: {e}")
+        paraphraser = None
+
+# Initialize paraphraser on startup
+initialize_paraphraser()
 
 @app.route('/')
 def index():
     """Main page"""
     return render_template('index.html')
 
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    """Serve static files"""
-    return send_from_directory('static', filename)
-
-@app.route('/api/system-info')
-def get_system_info():
-    """Get system information"""
-    return jsonify({
-        "paraphraser_available": PARAPHRASER_AVAILABLE,
-        "paraphraser_type": paraphraser_type,
-        "system_info": system_info
-    })
-
 @app.route('/api/paraphrase', methods=['POST'])
-def paraphrase_text():
-    """Process paraphrase request"""
+def paraphrase_api():
+    """API endpoint for paraphrasing"""
     try:
         data = request.get_json()
         
+        # Validate input
         if not data or 'text' not in data:
-            return jsonify({"error": "No text provided"}), 400
+            return jsonify({'success': False, 'error': 'Text is required'})
         
         text = data['text'].strip()
         if not text:
-            return jsonify({"error": "Empty text provided"}), 400
+            return jsonify({'success': False, 'error': 'Text cannot be empty'})
         
-        # Get parameters
-        method = data.get('method', 'hybrid')
-        num_variations = data.get('num_variations', 3)
-        synonym_rate = data.get('synonym_rate', 0.3)
-        temperature = data.get('temperature', 0.8)
-        top_p = data.get('top_p', 0.95)
+        # Extract parameters
+        method = data.get('method', 'integrated')
+        num_variations = min(int(data.get('num_variations', 3)), 5)
+        synonym_rate = float(data.get('synonym_rate', 0.4))
+        temperature = float(data.get('temperature', 0.8))
+        top_p = float(data.get('top_p', 0.95))
         
+        # Check if paraphraser is available
         if not paraphraser:
-            return jsonify({"error": "Paraphraser not initialized"}), 500
+            return jsonify({'success': False, 'error': 'Paraphraser not initialized'})
         
+        # Record start time
         start_time = time.time()
         
+        # Prepare parameters for different methods
+        hybrid_params = {
+            'synonym_rate': synonym_rate,
+            'use_smart_replacement': True,
+            'preserve_keywords': True
+        }
+        
+        t5_params = {
+            'temperature': temperature,
+            'top_p': top_p,
+            'max_length': 128,
+            'num_beams': 5,
+            'do_sample': True,
+            'early_stopping': True,
+            'repetition_penalty': 1.3,
+            'no_repeat_ngram_size': 3
+        }
+        
         # Generate paraphrases
-        if paraphraser_type == "integrated":
-            hybrid_params = {'synonym_rate': synonym_rate}
-            t5_params = {'temperature': temperature, 'top_p': top_p}
+        results = paraphraser.paraphrase(
+            text=text,
+            method=method,
+            num_variations=num_variations,
+            hybrid_params=hybrid_params,
+            t5_params=t5_params
+        )
+        
+        # Calculate processing time
+        processing_time = time.time() - start_time
+        
+        # Filter and enhance results
+        enhanced_results = []
+        for result in results:
+            # Add quality score
+            quality_score = calculate_quality_score(text, result)
+            result['quality_score'] = quality_score
             
-            results = paraphraser.paraphrase(
-                text,
-                method=method,
-                num_variations=num_variations,
-                hybrid_params=hybrid_params,
-                t5_params=t5_params
-            )
-        else:
-            # Hybrid only
-            results = paraphraser.paraphrase(
-                text,
-                num_variations=num_variations,
-                synonym_rate=synonym_rate
-            )
+            # Only include high-quality results
+            if quality_score > 0.3:
+                enhanced_results.append(result)
         
-        end_time = time.time()
-        processing_time = end_time - start_time
+        # Sort by quality score
+        enhanced_results.sort(key=lambda x: x['quality_score'], reverse=True)
         
         return jsonify({
-            "success": True,
-            "results": results,
-            "processing_time": processing_time,
-            "method_used": method,
-            "total_results": len(results)
+            'success': True,
+            'results': enhanced_results,
+            'processing_time': processing_time,
+            'original_text': text,
+            'method_used': method,
+            'total_generated': len(results),
+            'high_quality_count': len(enhanced_results)
         })
         
     except Exception as e:
-        print(f"Error in paraphrase_text: {e}")
-        print(traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in paraphrase_api: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
-@app.route('/api/benchmark', methods=['POST'])
-def benchmark_methods():
-    """Run benchmark comparison"""
+def calculate_quality_score(original: str, result: dict) -> float:
+    """Calculate quality score for paraphrase result"""
     try:
-        data = request.get_json()
+        # Base score from similarity (inverse - lower similarity = higher quality for paraphrase)
+        similarity = result.get('similarity_score', 0.5)
+        base_score = 1.0 - similarity
         
-        if not data or 'text' not in data:
-            return jsonify({"error": "No text provided"}), 400
+        # Confidence score
+        confidence = result.get('confidence', 0.5)
         
-        text = data['text'].strip()
-        if not text:
-            return jsonify({"error": "Empty text provided"}), 400
+        # Length ratio score (penalize very short or very long paraphrases)
+        original_len = len(original.split())
+        result_len = len(result['text'].split())
+        length_ratio = result_len / original_len if original_len > 0 else 0
         
-        if paraphraser_type != "integrated":
-            return jsonify({"error": "Benchmark only available for integrated paraphraser"}), 400
+        length_score = 1.0
+        if length_ratio < 0.5 or length_ratio > 2.0:
+            length_score = 0.3
+        elif length_ratio < 0.7 or length_ratio > 1.5:
+            length_score = 0.7
         
-        # Run benchmark
-        test_sentences = [text]
-        benchmark_results = paraphraser.benchmark_comparison(test_sentences)
+        # Transformation score (more transformations = better)
+        transformations = result.get('transformations', [])
+        transformation_score = min(len(transformations) / 3.0, 1.0)
         
-        return jsonify({
-            "success": True,
-            "benchmark_results": benchmark_results
-        })
+        # Replacement score (synonym replacements)
+        replacements = result.get('replacement_details', [])
+        replacement_score = min(len(replacements) / 5.0, 1.0)
+        
+        # Combine scores with weights
+        quality_score = (
+            base_score * 0.3 +
+            confidence * 0.25 +
+            length_score * 0.2 +
+            transformation_score * 0.15 +
+            replacement_score * 0.1
+        )
+        
+        return min(max(quality_score, 0.0), 1.0)
         
     except Exception as e:
-        print(f"Error in benchmark_methods: {e}")
-        print(traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error calculating quality score: {e}")
+        return 0.5
 
 @app.route('/api/examples')
-def get_examples():
-    """Get example texts"""
+def examples_api():
+    """API endpoint for example texts"""
     examples = [
-        "Pendidikan adalah proses pembelajaran yang sangat penting untuk mengembangkan potensi manusia.",
-        "Teknologi informasi membantu mempercepat proses komunikasi di era modern.",
-        "Pemerintah harus memberikan perhatian khusus terhadap masalah kemiskinan.",
-        "Mahasiswa belajar dengan tekun untuk mencapai prestasi yang baik.",
+        "Teknologi kecerdasan buatan sangat penting untuk kemajuan masa depan.",
+        "Pendidikan adalah kunci utama dalam mengembangkan potensi manusia.",
+        "Pemerintah memberikan perhatian khusus terhadap masalah kemiskinan.",
+        "Mahasiswa harus belajar dengan tekun untuk mencapai prestasi yang baik.",
         "Perusahaan menggunakan strategi pemasaran yang inovatif untuk menarik pelanggan.",
-        "Artificial intelligence akan mengubah cara kita bekerja di masa depan.",
-        "Perubahan iklim merupakan tantangan global yang memerlukan tindakan segera."
+        "Komunikasi yang efektif sangat diperlukan dalam era digital modern.",
+        "Indonesia memiliki kekayaan alam yang melimpah dan beragam.",
+        "Penelitian ilmiah membutuhkan metode yang sistematis dan objektif.",
+        "Globalisasi membawa dampak positif dan negatif bagi negara berkembang.",
+        "Kesehatan mental sama pentingnya dengan kesehatan fisik dalam kehidupan."
     ]
     
-    return jsonify({"examples": examples})
+    return jsonify({'examples': examples})
+
+@app.route('/api/status')
+def status_api():
+    """API endpoint for system status"""
+    status = {
+        'paraphraser_loaded': paraphraser is not None,
+        'methods_available': {},
+        'synonym_count': 0
+    }
+    
+    if paraphraser:
+        status['methods_available'] = paraphraser.methods_available
+        if paraphraser.hybrid_paraphraser:
+            status['synonym_count'] = len(paraphraser.hybrid_paraphraser.synonym_dict)
+    
+    return jsonify(status)
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'success': False, 'error': 'Endpoint not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'success': False, 'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    print("🚀 Starting Flask Paraphraser Server...")
-    
-    # Initialize paraphraser
-    if initialize_paraphraser():
-        print(f"✅ Paraphraser initialized successfully ({paraphraser_type})")
-        print(f"📊 Available methods: {system_info.get('methods_available', {})}")
-    else:
-        print("❌ Failed to initialize paraphraser")
-        print("⚠️  Server will run but paraphrasing will not work")
-    
-    # Create templates and static directories if they don't exist
-    os.makedirs('templates', exist_ok=True)
+    # Create static directory if it doesn't exist
     os.makedirs('static', exist_ok=True)
+    os.makedirs('templates', exist_ok=True)
     
-    print("\n🌐 Server starting at http://localhost:5000")
-    print("📝 Use Ctrl+C to stop the server")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    # Run the app
+    app.run(debug=True, host='0.0.0.0', port=5000)
